@@ -145,6 +145,12 @@ Full request/response schemas live in Swagger (`/api-docs`). Quick reference:
 | **Digital ID** | `POST /digital-id/request`, `GET /digital-id/my-id`, `GET /digital-id` (admin), `GET /digital-id/:id`, `PATCH /digital-id/:id/approve`, `/reject`, `/revoke`, `GET /digital-id/:id/download/image`, `/pdf` |
 | **Upload** | `POST /upload/image`, `/document`, `/signature` (multipart form-data), `DELETE /upload/:publicId` |
 | **Stats** | `GET /admin/stats?period=30d` (admin dashboard aggregates) |
+| **Donations** | `GET /donations` (admin), `GET /donations/stats`, `POST /donations`, `PATCH /donations/:id`, `DELETE /donations/:id` |
+| **Executives** | `GET /executives` (public), `POST /executives`, `PUT /executives/:id`, `DELETE /executives/:id` |
+| **Gallery** | `GET /gallery` (public), `POST /gallery/upload`, `POST /gallery`, `PUT /gallery/:id`, `DELETE /gallery/:id` |
+| **Lodges** | `GET /lodges?status=&state=` (public), `POST /lodges`, `PUT /lodges/:id`, `DELETE /lodges/:id` |
+| **Web Content** | `GET /webcontent` (public), `PUT /webcontent` (admin) — singleton headline + section-visibility toggles |
+| **Programs** | `GET /programs` (public, read-only) |
 
 ### Uploads
 
@@ -152,6 +158,12 @@ Full request/response schemas live in Swagger (`/api-docs`). Quick reference:
 a `file` field (and optional `folder` field for `/upload/image`, one of
 `members | news | events | digital-id | general`). Response gives you back a Cloudinary
 `url` — use that URL directly wherever the API expects e.g. `coverImage` or `passportPhoto`.
+
+### Donations amount handling
+
+`POST /donations` and `PATCH /donations/:id` take `amount` as a **plain number** (e.g.
+`50000`). The API returns both fields: `amountValue` (the raw number, for calculations) and
+`amount` (a formatted NGN currency string, e.g. `"₦50,000"`, ready to render directly).
 
 ### Digital ID card downloads
 

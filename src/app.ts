@@ -19,6 +19,12 @@ import { adminUsersRouter } from "./modules/admin-users/admin-users.routes";
 import { digitalIdRouter } from "./modules/digital-id/digital-id.routes";
 import { uploadRouter } from "./modules/upload/upload.routes";
 import { statsRouter } from "./modules/stats/stats.routes";
+import { donationsRouter } from "./modules/donations/donations.routes";
+import { executivesRouter } from "./modules/executives/executives.routes";
+import { galleryRouter } from "./modules/gallery/gallery.routes";
+import { lodgesRouter } from "./modules/lodges/lodges.routes";
+import { webContentRouter } from "./modules/webcontent/webcontent.routes";
+import { programsRouter } from "./modules/programs/programs.routes";
 
 export function createApp() {
   const app = express();
@@ -46,6 +52,12 @@ export function createApp() {
   app.use("/api/digital-id", digitalIdRouter);
   app.use("/api/upload", uploadRouter);
   app.use("/api/admin", statsRouter);
+  app.use("/api/donations", donationsRouter);
+  app.use("/api/executives", executivesRouter);
+  app.use("/api/gallery", galleryRouter);
+  app.use("/api/lodges", lodgesRouter);
+  app.use("/api/webcontent", webContentRouter);
+  app.use("/api/programs", programsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

@@ -24,6 +24,7 @@ interface UserRow extends RowDataPacket {
   occupation: string | null;
   profile_photo: string | null;
   digital_id_status: string;
+  is_email_verified: number;
   created_at: string;
   updated_at: string;
 }
@@ -86,10 +87,15 @@ export async function registerUser(input: {
   const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
   const memberId = await generateMemberId();
 
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationTokenHash = hashToken(verificationToken);
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
   const [result] = await pool.query<ResultSetHeader>(
     `INSERT INTO users
-      (first_name, last_name, email, phone, password_hash, role, member_id, membership_type, status, state, chapter, occupation)
-     VALUES (?, ?, ?, ?, ?, 'member', ?, ?, 'pending', ?, ?, ?)`,
+      (first_name, last_name, email, phone, password_hash, role, member_id, membership_type, status,
+       state, chapter, occupation, email_verification_token, email_verification_expires_at)
+     VALUES (?, ?, ?, ?, ?, 'member', ?, ?, 'pending', ?, ?, ?, ?, ?)`,
     [
       input.firstName,
       input.lastName,
@@ -101,13 +107,18 @@ export async function registerUser(input: {
       input.state,
       input.chapter,
       input.occupation ?? null,
+      verificationTokenHash,
+      verificationExpiry,
     ]
   );
 
+  const verifyLink = `${env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
   await sendMail(
     input.email,
-    "Welcome to MCAN Southwest",
-    `<p>Hi ${input.firstName}, your registration was received. Your member ID is <strong>${memberId}</strong>. Your account is pending review.</p>`
+    "Confirm your MCAN Southwest email",
+    `<p>Hi ${input.firstName}, your registration was received. Your member ID is <strong>${memberId}</strong>.</p>
+     <p>Please confirm your email address by clicking <a href="${verifyLink}">here</a>. This link expires in 24 hours.</p>
+     <p>Your account will also need to be reviewed by an admin before you can log in.</p>`
   );
 
   return {
@@ -136,6 +147,10 @@ export async function loginUser(email: string, password: string) {
 
   if (user.status === "suspended" || user.status === "deactivated") {
     throw ApiError.forbidden("Account deactivated or suspended");
+  }
+
+  if (user.role === "member" && !user.is_email_verified) {
+    throw ApiError.forbidden("Please verify your email before logging in");
   }
 
   const accessToken = signAccessToken(user.id, user.role);
@@ -243,6 +258,46 @@ export async function forgotPassword(email: string) {
     email,
     "Reset your MCAN Southwest password",
     `<p>Hi ${user.first_name}, click <a href="${resetLink}">here</a> to reset your password. This link expires in 1 hour.</p>`
+  );
+}
+
+export async function verifyEmail(token: string) {
+  const tokenHash = hashToken(token);
+  const [rows] = await pool.query<UserRow[]>(
+    "SELECT id FROM users WHERE email_verification_token = ? AND email_verification_expires_at > NOW()",
+    [tokenHash]
+  );
+  const user = rows[0];
+  if (!user) throw ApiError.badRequest("Verification link is invalid or has expired");
+
+  await pool.query(
+    "UPDATE users SET is_email_verified = 1, email_verification_token = NULL, email_verification_expires_at = NULL WHERE id = ?",
+    [user.id]
+  );
+}
+
+export async function resendVerificationEmail(email: string) {
+  const [rows] = await pool.query<UserRow[]>(
+    "SELECT id, first_name, is_email_verified FROM users WHERE email = ? AND is_deleted = 0",
+    [email]
+  );
+  const user = rows[0] as (UserRow & { is_email_verified: number }) | undefined;
+  if (!user || user.is_email_verified) return; // do not reveal whether the email exists or is already verified
+
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationTokenHash = hashToken(verificationToken);
+  const verificationExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  await pool.query(
+    "UPDATE users SET email_verification_token = ?, email_verification_expires_at = ? WHERE id = ?",
+    [verificationTokenHash, verificationExpiry, user.id]
+  );
+
+  const verifyLink = `${env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
+  await sendMail(
+    email,
+    "Confirm your MCAN Southwest email",
+    `<p>Hi ${user.first_name}, please confirm your email address by clicking <a href="${verifyLink}">here</a>. This link expires in 24 hours.</p>`
   );
 }
 

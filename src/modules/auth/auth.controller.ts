@@ -56,6 +56,16 @@ export async function changePassword(req: Request, res: Response) {
   sendSuccess(res, 200, "Password changed successfully. Please log in again.");
 }
 
+export async function verifyEmail(req: Request, res: Response) {
+  await authService.verifyEmail(String(req.query.token));
+  sendSuccess(res, 200, "Email verified successfully.");
+}
+
+export async function resendVerification(req: Request, res: Response) {
+  await authService.resendVerificationEmail(req.body.email);
+  sendSuccess(res, 200, "If that email is registered and unverified, a new verification link has been sent.");
+}
+
 export async function forgotPassword(req: Request, res: Response) {
   await authService.forgotPassword(req.body.email);
   sendSuccess(res, 200, "If that email is registered, a password reset link has been sent.");

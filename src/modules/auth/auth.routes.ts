@@ -7,6 +7,8 @@ import {
   registerSchema,
   loginSchema,
   changePasswordSchema,
+  verifyEmailQuerySchema,
+  resendVerificationSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
 } from "./auth.validation";
@@ -157,6 +159,57 @@ authRouter.patch(
   authGuard,
   validate({ body: changePasswordSchema }),
   asyncHandler(authController.changePassword)
+);
+
+/**
+ * @openapi
+ * /auth/verify-email:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Confirm a user's email address using the token from the verification email
+ *     security: []
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Verification link is invalid or has expired
+ */
+authRouter.get(
+  "/verify-email",
+  validate({ query: verifyEmailQuerySchema }),
+  asyncHandler(authController.verifyEmail)
+);
+
+/**
+ * @openapi
+ * /auth/resend-verification:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Resend the email verification link
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email]
+ *             properties:
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Verification link sent (always 200, does not reveal account state)
+ */
+authRouter.post(
+  "/resend-verification",
+  authRateLimiter,
+  validate({ body: resendVerificationSchema }),
+  asyncHandler(authController.resendVerification)
 );
 
 /**
