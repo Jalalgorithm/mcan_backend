@@ -3,8 +3,9 @@ import { sendSuccess } from "../../utils/ApiResponse";
 import * as lodgesService from "./lodges.service";
 
 export async function list(req: Request, res: Response) {
-  const q = req.query as Record<string, string | undefined>;
-  const lodges = await lodgesService.listLodges({ status: q.status, state: q.state });
+  const lodges = await lodgesService.listLodges(
+    req.validatedQuery as { status?: string; state?: string }
+  );
   sendSuccess(res, 200, "Lodges retrieved", { lodges });
 }
 

@@ -8,14 +8,7 @@ export async function create(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const q = req.query as Record<string, string | undefined>;
-  const result = await contactService.listContacts({
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 20,
-    sortOrder: (q.sortOrder as "asc" | "desc") || "desc",
-    isRead: q.isRead !== undefined ? q.isRead === "true" : undefined,
-    category: q.category,
-  });
+  const result = await contactService.listContacts(req.validatedQuery as never);
   sendSuccess(res, 200, "Contact messages retrieved", { messages: result.items }, result.meta);
 }
 

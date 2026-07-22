@@ -3,15 +3,14 @@ import { sendSuccess } from "../../utils/ApiResponse";
 import * as newsService from "./news.service";
 
 function parseQuery(req: Request) {
-  const q = req.query as Record<string, string | undefined>;
-  return {
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 10,
-    sortOrder: (q.sortOrder as "asc" | "desc") || "desc",
-    category: q.category,
-    search: q.search,
-    featured: q.featured !== undefined ? q.featured === "true" : undefined,
-    status: q.status,
+  return req.validatedQuery as {
+    page: number;
+    limit: number;
+    sortOrder: "asc" | "desc";
+    category?: string;
+    search?: string;
+    featured?: boolean;
+    status?: string;
   };
 }
 

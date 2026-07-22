@@ -174,10 +174,13 @@ export async function createNews(authorId: number, input: NewsInput) {
 }
 
 export async function replaceNews(id: number, input: NewsInput) {
-  await getRawById(id);
+  const existing = await getRawById(id);
   const readTime = estimateReadTime(input.content);
+  const publishedAt =
+    input.status === "published" ? existing.published_at ?? new Date() : existing.published_at;
+
   await pool.query(
-    `UPDATE news SET title = ?, content = ?, excerpt = ?, category = ?, cover_image = ?, tags = ?, featured = ?, status = ?, read_time = ?
+    `UPDATE news SET title = ?, content = ?, excerpt = ?, category = ?, cover_image = ?, tags = ?, featured = ?, status = ?, published_at = ?, read_time = ?
      WHERE id = ? AND is_deleted = 0`,
     [
       input.title,
@@ -188,6 +191,7 @@ export async function replaceNews(id: number, input: NewsInput) {
       JSON.stringify(input.tags ?? []),
       input.featured,
       input.status,
+      publishedAt,
       readTime,
       id,
     ]

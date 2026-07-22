@@ -10,7 +10,7 @@ function isSelfOrAdmin(req: Request, identifier: string) {
 }
 
 export async function list(req: Request, res: Response) {
-  const result = await membersService.listMembers(req.query as never);
+  const result = await membersService.listMembers(req.validatedQuery as never);
   sendSuccess(res, 200, "Members retrieved", { members: result.items }, result.meta);
 }
 

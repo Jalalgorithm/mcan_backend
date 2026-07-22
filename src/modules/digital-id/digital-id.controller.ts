@@ -17,13 +17,7 @@ export async function getMyId(req: Request, res: Response) {
 }
 
 export async function list(req: Request, res: Response) {
-  const q = req.query as Record<string, string | undefined>;
-  const result = await digitalIdService.listDigitalIds({
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 20,
-    status: q.status,
-    search: q.search,
-  });
+  const result = await digitalIdService.listDigitalIds(req.validatedQuery as never);
   sendSuccess(res, 200, "Digital ID requests retrieved", { requests: result.items }, result.meta);
 }
 

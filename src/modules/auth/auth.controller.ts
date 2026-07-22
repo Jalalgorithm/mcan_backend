@@ -57,7 +57,7 @@ export async function changePassword(req: Request, res: Response) {
 }
 
 export async function verifyEmail(req: Request, res: Response) {
-  await authService.verifyEmail(String(req.query.token));
+  await authService.verifyEmail(String(req.validatedQuery?.token));
   sendSuccess(res, 200, "Email verified successfully.");
 }
 

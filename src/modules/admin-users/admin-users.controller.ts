@@ -3,13 +3,7 @@ import { sendSuccess } from "../../utils/ApiResponse";
 import * as adminUsersService from "./admin-users.service";
 
 export async function list(req: Request, res: Response) {
-  const q = req.query as Record<string, string | undefined>;
-  const result = await adminUsersService.listAdminUsers({
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 20,
-    role: q.role,
-    status: q.status,
-  });
+  const result = await adminUsersService.listAdminUsers(req.validatedQuery as never);
   sendSuccess(res, 200, "Admins retrieved", { admins: result.items }, result.meta);
 }
 

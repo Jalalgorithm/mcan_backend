@@ -3,12 +3,7 @@ import { sendSuccess } from "../../utils/ApiResponse";
 import * as donationsService from "./donations.service";
 
 export async function list(req: Request, res: Response) {
-  const q = req.query as Record<string, string | undefined>;
-  const result = await donationsService.listDonations({
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 20,
-    status: q.status,
-  });
+  const result = await donationsService.listDonations(req.validatedQuery as never);
   sendSuccess(res, 200, "Donations retrieved", { donations: result.items }, result.meta);
 }
 

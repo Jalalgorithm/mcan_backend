@@ -3,17 +3,16 @@ import { sendSuccess } from "../../utils/ApiResponse";
 import * as eventsService from "./events.service";
 
 function parseQuery(req: Request) {
-  const q = req.query as Record<string, string | undefined>;
-  return {
-    page: Number(q.page) || 1,
-    limit: Number(q.limit) || 10,
-    sortOrder: (q.sortOrder as "asc" | "desc") || "asc",
-    upcoming: q.upcoming === "true",
-    past: q.past === "true",
-    category: q.category,
-    state: q.state,
-    search: q.search,
-    status: q.status,
+  return req.validatedQuery as {
+    page: number;
+    limit: number;
+    sortOrder: "asc" | "desc";
+    upcoming?: boolean;
+    past?: boolean;
+    category?: string;
+    state?: string;
+    search?: string;
+    status?: string;
   };
 }
 
