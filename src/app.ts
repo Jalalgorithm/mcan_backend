@@ -26,12 +26,28 @@ import { lodgesRouter } from "./modules/lodges/lodges.routes";
 import { webContentRouter } from "./modules/webcontent/webcontent.routes";
 import { programsRouter } from "./modules/programs/programs.routes";
 
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  ...env.CORS_EXTRA_ORIGINS.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
+
 export function createApp() {
   const app = express();
 
   app.set("trust proxy", 1);
   app.use(helmet());
-  app.use(cors({ origin: env.FRONTEND_URL, credentials: true }));
+  app.use(
+    cors({
+      origin(origin, callback) {
+        // No Origin header (e.g. curl, server-to-server, same-origin) — allow.
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`Origin ${origin} is not allowed by CORS`));
+      },
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use(cookieParser());
   app.use(pinoHttp({ logger }));

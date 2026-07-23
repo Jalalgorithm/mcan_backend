@@ -18,6 +18,7 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRY: z.string().default("7d"),
 
   FRONTEND_URL: z.string().url(),
+  CORS_EXTRA_ORIGINS: z.string().default("https://sw-mcan-staging.vercel.app"),
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(900000),
   RATE_LIMIT_MAX: z.coerce.number().default(100),
