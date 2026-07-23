@@ -25,13 +25,13 @@ export class ApiError extends Error {
   static badRequest(message: string, details?: unknown) {
     return new ApiError(400, "BAD_REQUEST", message, details);
   }
-  static unauthorized(message = "Unauthorized", code: ErrorCode = "UNAUTHORIZED") {
+  static unauthorized(message = "Please log in to continue.", code: ErrorCode = "UNAUTHORIZED") {
     return new ApiError(401, code, message);
   }
-  static forbidden(message = "Forbidden") {
+  static forbidden(message = "You don't have permission to do that.") {
     return new ApiError(403, "FORBIDDEN", message);
   }
-  static notFound(message = "Not found") {
+  static notFound(message = "We couldn't find what you were looking for.") {
     return new ApiError(404, "NOT_FOUND", message);
   }
   static conflict(message: string) {

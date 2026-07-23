@@ -2,6 +2,7 @@ import { Request } from "express";
 import multer, { StorageEngine } from "multer";
 import { UploadApiOptions } from "cloudinary";
 import { cloudinary } from "../config/cloudinary";
+import { ApiError } from "../utils/ApiError";
 
 const ALLOWED_IMAGE_FOLDERS = ["members", "news", "events", "digital-id", "general"];
 
@@ -56,7 +57,7 @@ export const uploadImage = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)) {
-      return cb(new Error("Only JPEG, PNG, or WebP images are accepted"));
+      return cb(ApiError.badRequest("Please upload a JPEG, PNG, or WebP image."));
     }
     cb(null, true);
   },
@@ -67,7 +68,7 @@ export const uploadDocument = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype !== "application/pdf") {
-      return cb(new Error("Only PDF documents are accepted"));
+      return cb(ApiError.badRequest("Please upload a PDF document."));
     }
     cb(null, true);
   },
@@ -78,7 +79,7 @@ export const uploadSignature = multer({
   limits: { fileSize: 2 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!["image/jpeg", "image/png"].includes(file.mimetype)) {
-      return cb(new Error("Only JPEG or PNG images are accepted"));
+      return cb(ApiError.badRequest("Please upload a JPEG or PNG image."));
     }
     cb(null, true);
   },

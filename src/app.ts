@@ -39,13 +39,16 @@ export function createApp() {
   app.set("trust proxy", 1);
   app.use(helmet());
   app.use(
-    cors({
-      origin(origin, callback) {
-        // No Origin header (e.g. curl, server-to-server, same-origin) — allow.
-        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-        callback(new Error(`Origin ${origin} is not allowed by CORS`));
-      },
-      credentials: true,
+    cors((req, callback) => {
+      const requestOrigin = req.header("Origin");
+      // Same-origin requests (e.g. Swagger UI at /api-docs calling its own API) send an
+      // Origin header even though they're not cross-origin — always allow those.
+      const selfOrigin = `${req.protocol}://${req.get("host")}`;
+      const isAllowed =
+        !requestOrigin || requestOrigin === selfOrigin || allowedOrigins.includes(requestOrigin);
+      // Deny by omitting CORS headers (browser blocks it client-side) rather than throwing —
+      // throwing here would turn every rejected origin into a 500 for the request.
+      callback(null, { origin: isAllowed, credentials: true });
     })
   );
   app.use(express.json());
